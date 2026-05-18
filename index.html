@@ -5,32 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Binary Analytics Terminal</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2=family=Inter:wght@400;600;700;900&display=swap');
         
         body, html { 
-            margin: 0; padding: 0; background: #05070a; color: white; 
+            margin: 0; padding: 0; 
+            background: #090c10; /* Дорогой равномерный темный фон */
+            color: white; 
             font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; 
             display: flex; align-items: center; justify-content: center;
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
         
-        .terminal { 
-            width: 90%; max-width: 380px; background: #0f1218; 
-            border: 1px solid #1f2530; border-radius: 24px; padding: 30px 24px; 
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6); text-align: center; 
-            box-sizing: border-box;
+        /* СТРУКТУРА ЭКРАНОВ */
+        .app-container {
+            width: 90%; max-width: 380px;
+            text-align: center;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: opacity 0.4s ease;
+        }
+
+        .screen.active {
+            display: flex;
         }
         
-        .header { 
-            font-size: 10px; color: #4e5a71; text-transform: uppercase; 
-            letter-spacing: 2px; margin-bottom: 25px; font-weight: 700;
+        /* КРУПНЫЙ ЖИРНЫЙ ЗАГОЛОВОК */
+        .main-title {
+            font-size: 26px; 
+            font-weight: 900; 
+            line-height: 1.3;
+            margin-bottom: 35px;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
         }
         
         /* ЭКРАН СИГНАЛА */
         .signal-display { 
-            height: 200px; background: #07090d; border-radius: 18px; 
-            border: 1px solid #1a1f29; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; margin-bottom: 25px; 
+            width: 100%;
+            height: 200px; background: #0d1117; border-radius: 18px; 
+            border: 1px solid #1f2631; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; margin-bottom: 30px; 
             position: relative; overflow: hidden; padding: 10px; box-sizing: border-box;
         }
         
@@ -46,9 +67,9 @@
             100% { top: 0%; } 
         }
 
-        /* ПРОГРЕСС БАР (ДЁРГАНЫЙ) */
+        /* ПРОГРЕСС БАР */
         .progress-container {
-            width: 80%; height: 4px; background: #131722; 
+            width: 80%; height: 4px; background: #161b22; 
             border-radius: 2px; margin-top: 15px; display: none; overflow: hidden;
             position: relative;
         }
@@ -59,59 +80,64 @@
             transition: width 0.15s cubic-bezier(0.22, 1, 0.36, 1);
         }
         
-        #pair { font-size: 16px; font-weight: 700; color: #8a96ab; margin-bottom: 5px; letter-spacing: 0.5px; }
+        #pair { font-size: 18px; font-weight: 700; color: #8a96ab; margin-bottom: 5px; }
         
-        #direction { font-size: 38px; font-weight: 900; margin: 8px 0; display: none; letter-spacing: 1px; }
+        #direction { font-size: 40px; font-weight: 900; margin: 8px 0; display: none; letter-spacing: 1px; }
         .up { color: #00ff88; text-shadow: 0 0 25px rgba(0,255,136,0.5); }
         .down { color: #ff3d71; text-shadow: 0 0 25px rgba(255,61,113,0.5); }
         
         .info-row { display: none; gap: 15px; margin-top: 5px; }
-        .info-box { font-size: 12px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.03); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .info-box { font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.03); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
         .profit-color { color: #00d2ff; font-weight: 700; }
 
-        .status-msg { font-size: 11px; color: #00d2ff; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .status-msg { font-size: 12px; color: #00d2ff; text-transform: uppercase; font-weight: 700; }
 
-        /* КНОПКА */
+        /* ПРЕМИУМ КНОПКИ */
         .btn { 
             background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%); 
-            border: none; width: 100%; padding: 18px; border-radius: 14px; 
-            color: white; font-size: 15px; font-weight: 700; cursor: pointer; 
-            text-transform: uppercase; box-shadow: 0 8px 20px rgba(0,114,255,0.25); 
+            border: none; width: 100%; padding: 19px; border-radius: 14px; 
+            color: white; font-size: 16px; font-weight: 700; cursor: pointer; 
+            text-transform: uppercase; box-shadow: 0 8px 25px rgba(0,114,255,0.25); 
             transition: 0.2s; letter-spacing: 0.5px;
         }
         .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn:disabled { 
-            background: #161b25; color: #3d4758; box-shadow: none; cursor: not-allowed; 
+            background: #161b22; color: #3d4758; box-shadow: none; cursor: not-allowed; 
         }
-        
-        .footer-info { margin-top: 18px; font-size: 10px; color: #4e5a71; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-<div class="terminal">
-    <div class="header">Neural Network Analysis v4.2</div>
+<div class="app-container">
     
-    <div class="signal-display">
-        <div class="scanner-line" id="line"></div>
-        <div id="pair">ВЫБОР КУРСА...</div>
-        <div id="direction">ВВЕРХ ⬆️</div>
+    <div class="screen active" id="welcomeScreen">
+        <div class="main-title">Добро пожаловать в<br>анализатор 1TRADE</div>
+        <button class="btn" onclick="startApp()">Старт</button>
+    </div>
+    
+    <div class="screen" id="terminalScreen">
+        <div class="main-title">Получи сигнал<br>прямо сейчас!</div>
         
-        <div class="info-row" id="infoRow">
-            <div class="info-box">ВРЕМЯ: 5 МИН</div>
-            <div class="info-box">ДОХОД: <span id="profit" class="profit-color">85%</span></div>
+        <div class="signal-display">
+            <div class="scanner-line" id="line"></div>
+            <div id="pair">ОЖИДАНИЕ ЗАПУСКА</div>
+            <div id="direction">ВВЕРХ ⬆️</div>
+            
+            <div class="info-row" id="infoRow">
+                <div class="info-box">ВРЕМЯ: 5 МИН</div>
+                <div class="info-box">ДОХОД: <span id="profit" class="profit-color">85%</span></div>
+            </div>
+
+            <div id="status" class="status-msg">Система готова к анализу</div>
+            <div class="progress-container" id="pContainer"><div class="progress-bar" id="pBar"></div></div>
         </div>
 
-        <div id="status" class="status-msg">Система готова к анализу</div>
-        <div class="progress-container" id="pContainer"><div class="progress-bar" id="pBar"></div></div>
+        <button class="btn" id="mainBtn" onclick="analyze()">Получить сигнал</button>
     </div>
 
-    <button class="btn" id="mainBtn" onclick="analyze()">Получить сигнал</button>
-    <div class="footer-info">TOP-1 ТЕРМИНАЛ СНГ</div>
 </div>
 
 <script>
-    // Пул пар строго с твоего скриншота и их реальный процент доходности
     const marketData = [
         { pair: "USD/CAD OTC", profit: "87%" },
         { pair: "EUR/GBP OTC", profit: "85%" },
@@ -126,8 +152,13 @@
         { text: "Подбираем оптимальную валютную пару...", target: 58 },
         { text: "Сканируем объемы покупателей...", target: 72 },
         { text: "Ищем идеальную точку входа...", target: 91 },
-        { text: "Формируем финальный прогноз...", target: 100 }
+        { text: "Формируем прогноз...", target: 100 }
     ];
+
+    function startApp() {
+        document.getElementById('welcomeScreen').classList.remove('active');
+        document.getElementById('terminalScreen').classList.add('active');
+    }
 
     function analyze() {
         const btn = document.getElementById('mainBtn');
@@ -140,7 +171,6 @@
         const pContainer = document.getElementById('pContainer');
         const pBar = document.getElementById('pBar');
 
-        // Сброс интерфейса в режим загрузки
         btn.disabled = true;
         dir.style.display = 'none';
         infoRow.style.display = 'none';
@@ -154,18 +184,16 @@
         let currentProgress = 0;
         let phaseIndex = 0;
 
-        // Таймер с искусственными дёрганиями и заминками (~13 секунд суммарно)
         let interval = setInterval(() => {
-            // Создаем реалистичные рывки (иногда прибавляет много, иногда зависает)
             let rand = Math.random();
             let step = 0;
             
             if (rand > 0.85) {
-                step = Math.floor(Math.random() * 8) + 4; // Быстрый скачок
+                step = Math.floor(Math.random() * 8) + 4; 
             } else if (rand > 0.4) {
-                step = Math.floor(Math.random() * 2) + 1; // Медленное ползение
+                step = Math.floor(Math.random() * 2) + 1; 
             } else {
-                step = 0; // Зависание на текущем проценте (имитация вычислений)
+                step = 0; 
             }
 
             currentProgress += step;
@@ -173,37 +201,31 @@
 
             pBar.style.width = currentProgress + '%';
 
-            // Смена текстовых фаз по мере продвижения шкалы
             if (phaseIndex < phases.length && currentProgress >= phases[phaseIndex].target) {
                 status.innerText = phases[phaseIndex].text;
                 phaseIndex++;
             }
 
-            // Конец загрузки
             if (currentProgress >= 100) {
                 clearInterval(interval);
                 setTimeout(showResult, 500);
             }
-        }, 150); // Частота обновления тиков
+        }, 150); 
 
         function showResult() {
-            // Выключаем сканер и шкалу
             line.style.animation = 'none';
             line.style.opacity = '0';
             pContainer.style.display = 'none';
-            status.innerText = "Сигнал сформирован успешно:";
+            status.innerText = "Прогноз сформирован:";
 
-            // Случайный выбор пары из пула
             const selected = marketData[Math.floor(Math.random() * marketData.length)];
             pairText.innerText = selected.pair;
             profitText.innerText = selected.profit;
 
-            // Направление (ВВЕРХ / ВНИЗ)
             const isUp = Math.random() > 0.5;
             dir.innerText = isUp ? "ВВЕРХ ⬆️" : "ВНИЗ ⬇️";
             dir.className = isUp ? "up" : "down";
             
-            // Плавное отображение результата
             dir.style.display = 'block';
             infoRow.style.display = 'flex';
             
