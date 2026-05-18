@@ -5,28 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Binary Analytics Terminal</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body, html { margin: 0; padding: 0; background: #05070a; color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .terminal { width: 90%; max-width: 400px; background: #0f1218; border: 1px solid #1f2530; border-radius: 20px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
-        .header { font-size: 10px; color: #4e5a71; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
-        .signal-display { height: 180px; background: #07090d; border-radius: 15px; border: 1px solid #1a1f29; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; position: relative; overflow: hidden; }
+        body, html { 
+            margin: 0; padding: 0; background: #05070a; color: white; 
+            font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; 
+            display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
         
-        .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #00d2ff; box-shadow: 0 0 15px #00d2ff; opacity: 0; }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+        .terminal { 
+            width: 90%; max-width: 380px; background: #0f1218; 
+            border: 1px solid #1f2530; border-radius: 24px; padding: 30px 24px; 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6); text-align: center; 
+            box-sizing: border-box;
+        }
+        
+        .header { 
+            font-size: 10px; color: #4e5a71; text-transform: uppercase; 
+            letter-spacing: 2px; margin-bottom: 25px; font-weight: 700;
+        }
+        
+        /* ЭКРАН СИГНАЛА */
+        .signal-display { 
+            height: 200px; background: #07090d; border-radius: 18px; 
+            border: 1px solid #1a1f29; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; margin-bottom: 25px; 
+            position: relative; overflow: hidden; padding: 10px; box-sizing: border-box;
+        }
+        
+        /* ЛАЗЕРНЫЙ СКАНЕР */
+        .scanner-line { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
+            background: linear-gradient(to right, transparent, #00d2ff, transparent); 
+            box-shadow: 0 0 15px #00d2ff; opacity: 0; 
+        }
+        @keyframes scan { 
+            0% { top: 0%; } 
+            50% { top: 100%; }
+            100% { top: 0%; } 
+        }
 
-        #pair { font-size: 14px; color: #8a96ab; margin-bottom: 5px; }
-        #direction { font-size: 42px; font-weight: 900; margin: 10px 0; display: none; }
-        .up { color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.4); }
-        .down { color: #ff3d71; text-shadow: 0 0 20px rgba(255,61,113,0.4); }
+        /* ПРОГРЕСС БАР (ДЁРГАНЫЙ) */
+        .progress-container {
+            width: 80%; height: 4px; background: #131722; 
+            border-radius: 2px; margin-top: 15px; display: none; overflow: hidden;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; 
+            background: linear-gradient(90deg, #0072ff, #00d2ff);
+            box-shadow: 0 0 8px #00d2ff;
+            transition: width 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+        }
         
-        #time { font-size: 18px; font-weight: bold; color: #fff; display: none; }
-        .status-msg { font-size: 11px; color: #00d2ff; text-transform: uppercase; font-weight: bold; }
+        #pair { font-size: 16px; font-weight: 700; color: #8a96ab; margin-bottom: 5px; letter-spacing: 0.5px; }
+        
+        #direction { font-size: 38px; font-weight: 900; margin: 8px 0; display: none; letter-spacing: 1px; }
+        .up { color: #00ff88; text-shadow: 0 0 25px rgba(0,255,136,0.5); }
+        .down { color: #ff3d71; text-shadow: 0 0 25px rgba(255,61,113,0.5); }
+        
+        .info-row { display: none; gap: 15px; margin-top: 5px; }
+        .info-box { font-size: 12px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.03); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .profit-color { color: #00d2ff; font-weight: 700; }
 
-        .btn { background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%); border: none; width: 100%; padding: 18px; border-radius: 12px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0,114,255,0.3); transition: 0.3s; }
-        .btn:disabled { background: #1a1f29; color: #4e5a71; box-shadow: none; }
+        .status-msg { font-size: 11px; color: #00d2ff; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+
+        /* КНОПКА */
+        .btn { 
+            background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%); 
+            border: none; width: 100%; padding: 18px; border-radius: 14px; 
+            color: white; font-size: 15px; font-weight: 700; cursor: pointer; 
+            text-transform: uppercase; box-shadow: 0 8px 20px rgba(0,114,255,0.25); 
+            transition: 0.2s; letter-spacing: 0.5px;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn:disabled { 
+            background: #161b25; color: #3d4758; box-shadow: none; cursor: not-allowed; 
+        }
         
-        .footer-info { margin-top: 15px; font-size: 10px; color: #4e5a71; }
+        .footer-info { margin-top: 18px; font-size: 10px; color: #4e5a71; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -36,51 +94,121 @@
     
     <div class="signal-display">
         <div class="scanner-line" id="line"></div>
-        <div id="pair">EUR/USD (OTC)</div>
-        <div id="direction">UP</div>
-        <div id="time">5 MINUTES</div>
-        <div id="status" class="status-msg">Система готова</div>
+        <div id="pair">ВЫБОР КУРСА...</div>
+        <div id="direction">ВВЕРХ ⬆️</div>
+        
+        <div class="info-row" id="infoRow">
+            <div class="info-box">ВРЕМЯ: 5 МИН</div>
+            <div class="info-box">ДОХОД: <span id="profit" class="profit-color">85%</span></div>
+        </div>
+
+        <div id="status" class="status-msg">Система готова к анализу</div>
+        <div class="progress-container" id="pContainer"><div class="progress-bar" id="pBar"></div></div>
     </div>
 
     <button class="btn" id="mainBtn" onclick="analyze()">Получить сигнал</button>
-    <div class="footer-info">Точность прогноза: 83.7%</div>
+    <div class="footer-info">TOP-1 ТЕРМИНАЛ СНГ</div>
 </div>
 
 <script>
+    // Пул пар строго с твоего скриншота и их реальный процент доходности
+    const marketData = [
+        { pair: "USD/CAD OTC", profit: "87%" },
+        { pair: "EUR/GBP OTC", profit: "85%" },
+        { pair: "EUR/JPY OTC", profit: "85%" },
+        { pair: "AUD/JPY OTC", profit: "81%" },
+        { pair: "GBP/JPY OTC", profit: "81%" }
+    ];
+
+    const phases = [
+        { text: "Анализируем волатильность рынка...", target: 18 },
+        { text: "Фильтруем шумы OTC котировок...", target: 35 },
+        { text: "Подбираем оптимальную валютную пару...", target: 58 },
+        { text: "Сканируем объемы покупателей...", target: 72 },
+        { text: "Ищем идеальную точку входа...", target: 91 },
+        { text: "Формируем финальный прогноз...", target: 100 }
+    ];
+
     function analyze() {
         const btn = document.getElementById('mainBtn');
         const line = document.getElementById('line');
         const status = document.getElementById('status');
         const dir = document.getElementById('direction');
-        const time = document.getElementById('time');
-        const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "EUR/JPY"];
+        const infoRow = document.getElementById('infoRow');
+        const pairText = document.getElementById('pair');
+        const profitText = document.getElementById('profit');
+        const pContainer = document.getElementById('pContainer');
+        const pBar = document.getElementById('pBar');
 
+        // Сброс интерфейса в режим загрузки
         btn.disabled = true;
-        line.style.opacity = '1';
-        line.style.animation = 'scan 1.5s infinite linear';
-        status.innerText = "Сканирование рынка...";
         dir.style.display = 'none';
-        time.style.display = 'none';
-        document.getElementById('pair').innerText = pairs[Math.floor(Math.random()*pairs.length)] + " (OTC)";
+        infoRow.style.display = 'none';
+        pairText.innerText = "АНАЛИЗ РЫНКА...";
+        
+        line.style.opacity = '1';
+        line.style.animation = 'scan 2s infinite linear';
+        pContainer.style.display = 'block';
+        pBar.style.width = '0%';
 
-        setTimeout(() => { status.innerText = "Анализ объемов..."; }, 2000);
-        setTimeout(() => { status.innerText = "Поиск точки входа..."; }, 4000);
+        let currentProgress = 0;
+        let phaseIndex = 0;
 
-        setTimeout(() => {
+        // Таймер с искусственными дёрганиями и заминками (~13 секунд суммарно)
+        let interval = setInterval(() => {
+            // Создаем реалистичные рывки (иногда прибавляет много, иногда зависает)
+            let rand = Math.random();
+            let step = 0;
+            
+            if (rand > 0.85) {
+                step = Math.floor(Math.random() * 8) + 4; // Быстрый скачок
+            } else if (rand > 0.4) {
+                step = Math.floor(Math.random() * 2) + 1; // Медленное ползение
+            } else {
+                step = 0; // Зависание на текущем проценте (имитация вычислений)
+            }
+
+            currentProgress += step;
+            if (currentProgress > 100) currentProgress = 100;
+
+            pBar.style.width = currentProgress + '%';
+
+            // Смена текстовых фаз по мере продвижения шкалы
+            if (phaseIndex < phases.length && currentProgress >= phases[phaseIndex].target) {
+                status.innerText = phases[phaseIndex].text;
+                phaseIndex++;
+            }
+
+            // Конец загрузки
+            if (currentProgress >= 100) {
+                clearInterval(interval);
+                setTimeout(showResult, 500);
+            }
+        }, 150); // Частота обновления тиков
+
+        function showResult() {
+            // Выключаем сканер и шкалу
             line.style.animation = 'none';
             line.style.opacity = '0';
-            status.innerText = "Сигнал сформирован:";
-            
+            pContainer.style.display = 'none';
+            status.innerText = "Сигнал сформирован успешно:";
+
+            // Случайный выбор пары из пула
+            const selected = marketData[Math.floor(Math.random() * marketData.length)];
+            pairText.innerText = selected.pair;
+            profitText.innerText = selected.profit;
+
+            // Направление (ВВЕРХ / ВНИЗ)
             const isUp = Math.random() > 0.5;
             dir.innerText = isUp ? "ВВЕРХ ⬆️" : "ВНИЗ ⬇️";
             dir.className = isUp ? "up" : "down";
-            dir.style.display = 'block';
             
-            time.innerText = "СРОК: 5 МИНУТ";
-            time.style.display = 'block';
+            // Плавное отображение результата
+            dir.style.display = 'block';
+            infoRow.style.display = 'flex';
             
             btn.disabled = false;
-        }, 6000);
+        }
     }
 </script>
 
