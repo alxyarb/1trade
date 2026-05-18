@@ -44,21 +44,16 @@
             width: 100%;
         }
         
-        /* ГИБКИЙ КОНТЕЙНЕР ДЛЯ ВЫВОДА ДАННЫХ */
+        /* ЖЕСТКИЙ СТАТИЧНЫЙ КОНТЕЙНЕР (ВЫСОТА НЕ МЕНЯЕТСЯ) */
         .signal-display { 
             width: 100%;
-            min-height: 220px; 
+            height: 250px; 
             background: #0d1117; 
             border-radius: 18px; 
             border: 1px solid #1f2631; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
             margin-bottom: 25px; 
             position: relative; 
             overflow: hidden; 
-            padding: 20px 10px; 
             box-sizing: border-box;
         }
         
@@ -67,6 +62,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
             background: linear-gradient(to right, transparent, #00d2ff, transparent); 
             box-shadow: 0 0 15px #00d2ff; opacity: 0; 
+            z-index: 5;
         }
         @keyframes scan { 
             0% { top: 0%; } 
@@ -74,31 +70,44 @@
             100% { top: 0%; } 
         }
 
+        /* ПОЗИЦИОНИРОВАНИЕ КОНТЕНТА ВНУТРИ КАРКАСА */
+        .content-wrapper {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #pair { font-size: 20px; font-weight: 700; color: #8a96ab; margin: 0; text-transform: uppercase; }
+        
+        #direction { font-size: 42px; font-weight: 900; margin: 15px 0; display: none; letter-spacing: 1px; text-transform: uppercase; }
+        .up { color: #00ff88; text-shadow: 0 0 25px rgba(0,255,136,0.5); }
+        .down { color: #ff3d71; text-shadow: 0 0 25px rgba(255,61,113,0.5); }
+        
+        /* ФИКСИРОВАННЫЙ БЛОК ИНФОРМАЦИИ (НЕ ДВИГАЕТ НИЧЕГО) */
+        .info-row { display: none; gap: 10px; margin-top: 5px; justify-content: center; width: 100%; }
+        .info-box { font-size: 12px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); text-transform: uppercase; }
+        .profit-color { color: #00d2ff; }
+
+        .status-msg { font-size: 12px; color: #00d2ff; text-transform: uppercase; font-weight: 700; margin-top: 15px; text-align: center; width: 90%; }
+
         /* ПРОГРЕСС БАР */
         .progress-container {
-            width: 80%; height: 4px; background: #161b22; 
-            border-radius: 2px; margin-top: 15px; display: none; overflow: hidden;
+            width: 80%; height: 6px; background: #161b22; 
+            border-radius: 3px; margin-top: 15px; display: none; overflow: hidden;
         }
         .progress-bar {
             height: 100%; width: 0%; 
             background: linear-gradient(90deg, #0072ff, #00d2ff);
             box-shadow: 0 0 8px #00d2ff;
-            transition: width 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: width 0.1s linear;
         }
-        
-        #pair { font-size: 18px; font-weight: 700; color: #8a96ab; margin: 0 0 5px 0; text-transform: uppercase; }
-        
-        #direction { font-size: 38px; font-weight: 900; margin: 10px 0; display: none; letter-spacing: 1px; }
-        .up { color: #00ff88; text-shadow: 0 0 25px rgba(0,255,136,0.5); }
-        .down { color: #ff3d71; text-shadow: 0 0 25px rgba(255,61,113,0.5); }
-        
-        .info-row { display: none; gap: 10px; margin: 12px 0 0 0; justify-content: center; width: 100%; }
-        .info-box { font-size: 12px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); text-transform: uppercase; }
-        .profit-color { color: #00d2ff; }
 
-        .status-msg { font-size: 11px; color: #00d2ff; text-transform: uppercase; font-weight: 700; margin-top: 5px; max-width: 90%; }
-
-        /* КНОПКА */
+        /* КНОПКА ВСЕГДА НА ОДНОМ МЕСТЕ */
         .btn { 
             background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%); 
             border: none; width: 100%; padding: 19px; border-radius: 14px; 
@@ -126,16 +135,19 @@
         
         <div class="signal-display">
             <div class="scanner-line" id="line"></div>
-            <div id="pair">Ожидание запуска</div>
-            <div id="direction">ВВЕРХ ⬆️</div>
             
-            <div class="info-row" id="infoRow">
-                <div class="info-box" id="timeBox">ВРЕМЯ: 5 МИН</div>
-                <div class="info-box">ДОХОД: <span id="profit" class="profit-color">85%</span></div>
-            </div>
+            <div class="content-wrapper">
+                <div id="pair">Ожидание запуска</div>
+                <div id="direction">ВВЕРХ ⬆️</div>
+                
+                <div class="info-row" id="infoRow">
+                    <div class="info-box" id="timeBox">ВРЕМЯ: 5 МИН</div>
+                    <div class="info-box">ДОХОД: <span id="profit" class="profit-color">85%</span></div>
+                </div>
 
-            <div id="status" class="status-msg">Система готова к анализу</div>
-            <div class="progress-container" id="pContainer"><div class="progress-bar" id="pBar"></div></div>
+                <div id="status" class="status-msg">Система готова к анализу</div>
+                <div class="progress-container" id="pContainer"><div class="progress-bar" id="pBar"></div></div>
+            </div>
         </div>
 
         <button class="btn" id="mainBtn" onclick="analyze()">Получить сигнал</button>
@@ -153,11 +165,11 @@
     ];
 
     const phases = [
-        { text: "Анализируем волатильность рынка...", target: 18 },
+        { text: "Анализируем волатильность рынка...", target: 15 },
         { text: "Фильтруем шумы OTC котировок...", target: 35 },
-        { text: "Подбираем оптимальную валютную пару...", target: 58 },
-        { text: "Сканируем объемы покупателей...", target: 72 },
-        { text: "Ищем идеальную точку входа...", target: 91 },
+        { text: "Подбираем валютную пару...", target: 55 },
+        { text: "Сканируем объемы рынка...", target: 75 },
+        { text: "Ищем точку входа...", target: 90 },
         { text: "Формируем прогноз...", target: 100 }
     ];
 
@@ -180,6 +192,7 @@
         const pContainer = document.getElementById('pContainer');
         const pBar = document.getElementById('pBar');
 
+        // Локаем кнопку и сбрасываем старый результат
         btn.disabled = true;
         dir.style.display = 'none';
         infoRow.style.display = 'none';
@@ -190,26 +203,39 @@
         pContainer.style.display = 'block';
         pBar.style.width = '0%';
 
+        // Генерируем рандомное время работы алгоритма от 10000мс (10с) до 20000мс (20с)
+        const totalDuration = Math.floor(Math.random() * 11000) + 10000;
+        const tickRate = 100; // Проверка каждые 100мс
+        const totalTicks = totalDuration / tickRate;
+        
         let currentProgress = 0;
         let phaseIndex = 0;
+        let elapsedTicks = 0;
 
         let interval = setInterval(() => {
-            let rand = Math.random();
-            let step = 0;
+            elapsedTicks++;
             
+            // Рассчитываем базовый шаг прогресса
+            let baseStep = (100 / totalTicks);
+            let rand = Math.random();
+            
+            // Делаем рваное движение (то быстрее, то зависает)
             if (rand > 0.85) {
-                step = Math.floor(Math.random() * 8) + 4; 
-            } else if (rand > 0.4) {
-                step = Math.floor(Math.random() * 2) + 1; 
+                currentProgress += baseStep * 3; // Рывок вперед
+            } else if (rand > 0.35) {
+                currentProgress += baseStep * 0.8; // Медленное ползение
             } else {
-                step = 0; 
+                currentProgress += 0; // Полная заминка алгоритма
             }
 
-            currentProgress += step;
             if (currentProgress > 100) currentProgress = 100;
+
+            // Если время вышло, принудительно ставим 100%
+            if (elapsedTicks >= totalTicks) currentProgress = 100;
 
             pBar.style.width = currentProgress + '%';
 
+            // Меняем текст под текущий процент
             if (phaseIndex < phases.length && currentProgress >= phases[phaseIndex].target) {
                 status.innerText = phases[phaseIndex].text;
                 phaseIndex++;
@@ -217,21 +243,20 @@
 
             if (currentProgress >= 100) {
                 clearInterval(interval);
-                setTimeout(showResult, 500);
+                setTimeout(showResult, 400);
             }
-        }, 150); 
+        }, tickRate); 
 
         function showResult() {
             line.style.animation = 'none';
             line.style.opacity = '0';
             pContainer.style.display = 'none';
-            status.innerText = "Прогноз сформирован:";
+            status.innerText = "Прогноз сформирован успешно:";
 
             const selected = marketData[Math.floor(Math.random() * marketData.length)];
             pairText.innerText = selected.pair;
             profitText.innerText = selected.profit;
 
-            // Рандомный выбор времени экспирации
             const randomTime = timeOptions[Math.floor(Math.random() * timeOptions.length)];
             timeBox.innerText = "ВРЕМЯ: " + randomTime;
 
